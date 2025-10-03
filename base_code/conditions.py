@@ -1,3 +1,11 @@
+"""
+Modular condition management system.
+
+Provides flexible framework for managing controllable properties (depth, porosity).
+Easily extensible to add new conditions. Handles categorical (one-hot) and
+continuous conditions with appropriate scaling and dimension management.
+"""
+
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Callable
 import numpy as np

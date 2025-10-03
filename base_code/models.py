@@ -1,15 +1,23 @@
+"""
+Generator and Discriminator architectures for Conditional GAN.
+
+Generator: Transforms noise + conditions into images using transposed convolutions.
+Discriminator: Classifies real vs fake images considering condition values.
+Both models support multiple conditions (category via one-hot, porosity as scalar).
+"""
+
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Reshape, LeakyReLU, Conv2D, Conv2DTranspose, Flatten, Concatenate, Dropout
 
+
 def generator_model(latent_dim, n_channels, patch_size, condition_manager):
     # Import the global category_dimension from main module
-    # Try to access the category_dimension from the main module
-    try:
-        from __main__ import category_dimension
-    except ImportError:
-        # Default to 5 if not available
-        category_dimension = 5
+    from __main__ import category_dimension
+
+    # Safety check
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before creating generator model")
         
     noise_input = Input(shape=(latent_dim,))
     # Create condition inputs
@@ -61,13 +69,14 @@ def generator_model(latent_dim, n_channels, patch_size, condition_manager):
     model = Model(inputs=model_inputs, outputs=generated_output)    
     return model
 
+
 def discriminator_model(in_shape, condition_manager):
     # Import the global category_dimension from main module
-    try:
-        from __main__ import category_dimension
-    except ImportError:
-        # Default to 5 if not available
-        category_dimension = 5
+    from __main__ import category_dimension
+
+    # Safety check
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before creating discriminator model")
         
     image_input = Input(shape=in_shape)
     

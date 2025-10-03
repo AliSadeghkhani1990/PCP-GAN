@@ -1,3 +1,12 @@
+"""
+Main execution script for Multi-Condition GAN training.
+
+Orchestrates the complete pipeline: loads multi-depth images, extracts patches,
+calculates porosity using U-Net, balances dataset with augmentation, trains
+conditional GAN models, and generates evaluation visualizations.
+Supports controllable generation based on depth (category) and porosity.
+"""
+
 import os
 import sys
 # Add the parent directory of 'multi_condition' to the Python path
@@ -20,9 +29,9 @@ from tensorflow.keras.models import load_model
 code_version = "Version48_Article_Multidepth_Publication"
 patch_size = 480
 threshold_value = 85
-num_patches_per_category_class = 120
+num_patches_per_category_class = 1200
 n_batch = 8
-epochs = 1
+epochs = 100
 latent_dim = 100
 learning_rate = 0.0002
 beta_1 = 0.5
@@ -30,12 +39,11 @@ saving_step = 5
 save_interval = True
 last_epochs_to_save = 20
 n_classes_porosity = 10
-desired_images_per_class = 16
-min_images_per_class = 2
+desired_images_per_class = 160
+min_images_per_class = 20
 bat_per_epo = 300
 truncation_percentage_left = 0.0
 truncation_percentage_right = 0.05
-
 # Image type configuration
 image_type = ImageType.RGB
 n_channels = {
@@ -52,7 +60,7 @@ model_names = ['G.h5', 'D.h5']
 local_model_path_loading = r'D:\OneDrive - University of Leeds\6. Running Result of GANs code\3. Universal_GAN_Project\250710\Version48_Article_Multidepth\rgb\conditional_category_porosity\R1_512\Load Model'
 unet_model_path = r"D:\OneDrive - University of Leeds\29.unet\models\best_model.h5"
 
-category_dimension = 4  # Expected to have 4 depths: 1879.50, 1881.90, 1883.75, and 1884.25
+category_dimension = None  # Will be automatically set based on dataset
 
 def load_or_create_models(n_channels, patch_size, condition_manager):
     """Load existing models or create new ones"""
@@ -113,10 +121,14 @@ def main():
     # Update category dimension based on actual data
     n_classes_category = len(category_classes) if category_classes is not None else 1
     print(f"Found {n_classes_category} depth categories")
-    
+
     if 'category' in active_conditions and category_classes is not None:
         category_dimension = n_classes_category
         print(f"Set category dimension to {category_dimension} based on dataset")
+    else:
+        # Set a default value if category is not active
+        category_dimension = 1
+        print(f"Category not active or no categories found, setting dimension to 1")
         # Print the actual depth values for each category class
         for depth, class_idx in category_classes.items():
             print(f"  Category class {class_idx}: Depth {depth}m")
@@ -135,22 +147,9 @@ def main():
         threshold_value,
         truncation_percentage_left, truncation_percentage_right, condition_manager
     )
-    
     # Categorize patches (importantly, this will categorize porosity per-depth)
     patch_info = categorize_patches(patch_info, n_classes_porosity, condition_manager)
-    
-    # Count patches per depth/category
-    if 'category' in active_conditions:
-        depth_counts = {}
-        for patch in patch_info:
-            depth = patch['category_actual']
-            if depth not in depth_counts:
-                depth_counts[depth] = 0
-            depth_counts[depth] += 1
-        
-        print("\nPatch distribution by depth:")
-        for depth, count in sorted(depth_counts.items()):
-            print(f"  Depth {depth}m: {count} patches")
+
     
     # Balance dataset using augmentation
     print("Balancing dataset with augmentation across all depths...")
@@ -168,29 +167,8 @@ def main():
         unet_model,
         threshold_value
     )
-
     # Save training images organized by depth and porosity class
     save_training_images_by_class(original_images, balanced_patch_info, patch_size, results_directory, condition_manager)
-    
-    # Debugging info
-    print("\n=== DEBUGGING INFO ===")
-    print(f"Total number of images used for training: {len(balanced_patch_info)}")
-    print(f"Original patch count before balancing: {len(patch_info)}")
-    print(f"Class distribution after balancing: {class_counts}")
-    
-    # Check distribution of balanced dataset by depth
-    if 'category' in active_conditions:
-        depth_counts = {}
-        for patch in balanced_patch_info:
-            depth = patch['category_actual']
-            if depth not in depth_counts:
-                depth_counts[depth] = 0
-            depth_counts[depth] += 1
-        
-        print("\nBalanced patch distribution by depth:")
-        for depth, count in sorted(depth_counts.items()):
-            print(f"  Depth {depth}m: {count} patches")
-    print("======================\n")
 
     # Analyze data ranges for generation
     print("\nAnalyzing data ranges for generation...")

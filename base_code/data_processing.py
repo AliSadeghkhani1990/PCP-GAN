@@ -1,3 +1,11 @@
+"""
+Data loading and preprocessing utilities.
+
+Loads images from depth-organized folders, extracts patches, calculates porosity
+using U-Net segmentation, handles category scaling, and performs dataset balancing.
+Supports multiple image types (RGB, grayscale, binary).
+"""
+
 import cv2
 import numpy as np
 import os

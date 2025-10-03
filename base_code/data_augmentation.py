@@ -1,3 +1,11 @@
+"""
+Augmentation utilities for dataset balancing.
+
+Provides 8 geometric transformations (flips/rotations) and noise injection
+to generate synthetic samples for underrepresented classes. Recalculates
+porosity for augmented images while preserving category labels.
+"""
+
 import numpy as np
 import random
 import sys

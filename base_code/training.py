@@ -1,3 +1,11 @@
+"""
+Training pipeline for Conditional GAN.
+
+Handles batch preparation, alternating G/D training with TensorFlow GradientTape,
+learning rate scheduling, model checkpointing, and loss visualization.
+Uses separate Adam optimizers with polynomial decay for stable training.
+"""
+
 import sys
 import os
 # Add the parent directory of 'multi_condition' to the Python path
@@ -18,9 +26,12 @@ import random
 
 # In training.py
 def generate_real_samples(original_images, balanced_patch_info, n_samples, patch_size, condition_manager):
-    # Import the global category_dimension variable 
-    # (You'll need to add "from __main__ import category_dimension" at the top of training.py)
+    # Import the global category_dimension variable
     from __main__ import category_dimension
+
+    # Safety check
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before training")
     
     indices = np.random.randint(0, len(balanced_patch_info), n_samples)
     
@@ -54,6 +65,9 @@ def generate_latent_points(latent_dim, n_samples, condition_manager, balanced_pa
     """Generate latent points for GAN input with one-hot encoding for categories"""
     # Import the global category_dimension variable
     from __main__ import category_dimension
+    # Safety check
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before generating latent points")
     
     z_input = np.random.randn(latent_dim * n_samples).reshape(n_samples, latent_dim)
     
@@ -107,7 +121,6 @@ def generate_fake_samples(generator, latent_dim, n_samples, condition_manager, b
     y = np.zeros((n_samples, 1))
     return [images] + inputs[1:] if len(inputs) > 1 else [images], y
 
-
 def train(g_model, d_model, dataset, balanced_patch_info, latent_dim, epochs, n_batch, 
           saving_step, non_empty_classes, patch_size, model_path_saving, n_classes_category, n_classes_porosity,
           save_interval, last_epochs_to_save, bat_per_epo, n_channels, condition_manager):
@@ -116,10 +129,8 @@ def train(g_model, d_model, dataset, balanced_patch_info, latent_dim, epochs, n_
     
     gen_losses = []
     disc_losses = []
-    
     # Calculate total steps for the learning rate schedule
     total_steps = epochs * bat_per_epo
-    
     # Initialize learning rate schedules
     lr_scheduleG = tf.keras.optimizers.schedules.PolynomialDecay(
         initial_learning_rate=2e-4,
@@ -127,19 +138,16 @@ def train(g_model, d_model, dataset, balanced_patch_info, latent_dim, epochs, n_
         end_learning_rate=2e-6,
         power=1.0
     )
-    
     lr_scheduleD = tf.keras.optimizers.schedules.PolynomialDecay(
         initial_learning_rate=2e-4,
         decay_steps=total_steps,
         end_learning_rate=2e-6,
         power=1.0
     )
-    
     # Initialize optimizers
     g_optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduleG, beta_1=0.5)
     d_optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduleD, beta_1=0.5)
     d_model.compile(loss='binary_crossentropy', optimizer=d_optimizer, metrics=['accuracy'])
-    
     # Define loss function
     loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=False)
     
@@ -219,8 +227,6 @@ def train(g_model, d_model, dataset, balanced_patch_info, latent_dim, epochs, n_
             'disc_loss': mean_disc_loss.numpy()
         })
         print(f"\nCurrent learning rates - Generator: {current_g_lr:.2e}, Discriminator: {current_d_lr:.2e}")
-        
-
         # Save models logic
         save_current_epoch = (i >= epochs - last_epochs_to_save) or (save_interval and (i + 1) % saving_step == 0)
         if save_current_epoch:
@@ -228,24 +234,12 @@ def train(g_model, d_model, dataset, balanced_patch_info, latent_dim, epochs, n_
             d_model.save(os.path.join(model_path_saving, f'D_epoch_{i + 1}.h5'), save_format='tf', include_optimizer=True)
             print(f"Models saved at epoch {i + 1}")
 
-        # # Plot generated images
-        # fixed_noise, fixed_classes = plot_generated_images(
-        #     g_model, i+1, latent_dim, n_channels, n_classes_category, n_classes_porosity, 
-        #     balanced_patch_info, condition_manager, fixed_noise, fixed_classes
-        # )
-        
-        
-        
-        # Enhanced visualization call
+          # Enhanced visualization call
         fixed_noise, fixed_classes = plot_generated_images_enhanced(
             g_model, i+1, latent_dim, n_channels, condition_manager, balanced_patch_info, 
             fixed_noise, fixed_classes
         )
-        
-        
-
     plot_training_results(gen_losses, disc_losses, epochs)
-
 
 def plot_training_results(gen_losses, disc_losses, epochs):
     fig, ax1 = plt.subplots(1, 1, figsize=(10, 6))

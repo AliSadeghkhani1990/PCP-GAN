@@ -1,3 +1,11 @@
+"""
+Utility functions for visualization and evaluation.
+
+Includes training/inference visualization, porosity accuracy evaluation (R²),
+dataset distribution analysis, results directory management, and metadata saving.
+Handles all plotting, file organization, and experiment tracking.
+"""
+
 import os
 import sys
 # Add the parent directory of 'multi_condition' to the Python path
@@ -159,6 +167,8 @@ def plot_generated_images_enhanced(generator, epoch, latent_dim, n_channels, con
     # Import the global category_dimension variable
     # (You'll need to add "from __main__ import category_dimension" at the top of utils.py)
     from __main__ import category_dimension
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before plotting")
     
     print("\n==== Enhanced Image Generation Debug ====")
     
@@ -479,6 +489,8 @@ def plot_generated_images_inference_enhanced(generator, latent_dim, n_channels, 
     
     # Import the global category_dimension variable
     from __main__ import category_dimension
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before inference")
     
     print("\n==== Enhanced Inference Image Generation ====")
     
@@ -670,10 +682,14 @@ def generate_latent_points(latent_dim, n_samples=1):
     return np.random.randn(n_samples, latent_dim)
 
 
-
-def evaluate_generator_accuracy(generator, latent_dim, balanced_patch_info, n_classes_category, unet_model, image_type, threshold_value, condition_manager, num_samples=100):
+def evaluate_generator_accuracy(generator, latent_dim, balanced_patch_info, n_classes_category, unet_model, image_type,
+                                threshold_value, condition_manager, num_samples=100):
     # Import global category_dimension
     from __main__ import category_dimension
+
+    # Safety check
+    if category_dimension is None:
+        raise ValueError("category_dimension must be set before evaluation")
 
     
     # Adjust num_samples if it's larger than available patches
