@@ -24,26 +24,28 @@ from base_code.utils import (analyze_patch_info, draw_heatmaps,
                                    create_results_directory, save_training_images_by_class, create_models_subdirectory
                                    )
 from tensorflow.keras.models import load_model
+from base_code.config import DATA_DIR, RESULTS_DIR, MODELS_DIR, UNET_MODEL_PATH, TRAINING_CONFIG
 
 # Configuration
+# Configuration from config file
 code_version = "Version48_Article_Multidepth_Publication"
-patch_size = 480
-threshold_value = 85
-num_patches_per_category_class = 1200
-n_batch = 8
-epochs = 100
-latent_dim = 100
-learning_rate = 0.0002
-beta_1 = 0.5
-saving_step = 5
-save_interval = True
-last_epochs_to_save = 20
-n_classes_porosity = 10
-desired_images_per_class = 160
-min_images_per_class = 20
-bat_per_epo = 300
-truncation_percentage_left = 0.0
-truncation_percentage_right = 0.05
+patch_size = TRAINING_CONFIG['patch_size']
+threshold_value = TRAINING_CONFIG['threshold_value']
+num_patches_per_category_class = TRAINING_CONFIG['num_patches_per_category_class']
+n_batch = TRAINING_CONFIG['n_batch']
+epochs = TRAINING_CONFIG['epochs']
+latent_dim = TRAINING_CONFIG['latent_dim']
+learning_rate = TRAINING_CONFIG['learning_rate']
+beta_1 = TRAINING_CONFIG['beta_1']
+saving_step = TRAINING_CONFIG.get('saving_step', 5)
+save_interval = TRAINING_CONFIG.get('save_interval', True)
+last_epochs_to_save = TRAINING_CONFIG.get('last_epochs_to_save', 20)
+n_classes_porosity = TRAINING_CONFIG['n_classes_porosity']
+desired_images_per_class = TRAINING_CONFIG['desired_images_per_class']
+min_images_per_class = TRAINING_CONFIG['min_images_per_class']
+bat_per_epo = TRAINING_CONFIG['bat_per_epo']
+truncation_percentage_left = TRAINING_CONFIG.get('truncation_percentage_left', 0.0)
+truncation_percentage_right = TRAINING_CONFIG.get('truncation_percentage_right', 0.05)
 # Image type configuration
 image_type = ImageType.RGB
 n_channels = {
@@ -54,11 +56,12 @@ n_channels = {
 }[image_type]
 
 # Directory with all depths
-directory_path = r'D:\OneDrive - University of Leeds\6. Running Result of GANs code\6. Training Images\1. Colorful\2. CGAN Article\Set 5\Set5.1\Scale Bar_500\cropped\Single run\data2\non_combined'
+
+directory_path = DATA_DIR
 reload = False  # Start with new models since we're using multiple depths now
 model_names = ['G.h5', 'D.h5']
-local_model_path_loading = r'D:\OneDrive - University of Leeds\6. Running Result of GANs code\3. Universal_GAN_Project\250710\Version48_Article_Multidepth\rgb\conditional_category_porosity\R1_512\Load Model'
-unet_model_path = r"D:\OneDrive - University of Leeds\29.unet\models\best_model.h5"
+local_model_path_loading = os.path.join(MODELS_DIR, 'pretrained')  # Uses config path
+unet_model_path = UNET_MODEL_PATH  # Uses config path
 
 category_dimension = None  # Will be automatically set based on dataset
 

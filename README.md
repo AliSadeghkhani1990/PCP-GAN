@@ -30,3 +30,13 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Download the pre-trained U-Net model
+# The U-Net model (377 MB) is required for porosity calculation
+
+# Option A: Automatic download (Recommended)
+python download_models.py
+
+# Option B: Manual download
+# Download from: https://doi.org/10.5281/zenodo.17271919
+# Place unet_model.h5 in the saved_models/ directory

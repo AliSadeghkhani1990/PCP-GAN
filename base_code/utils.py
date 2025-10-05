@@ -19,6 +19,7 @@ import seaborn as sns
 import datetime
 import random
 from base_code.data_processing import read_patch, calculate_porosity
+from base_code.config import RESULTS_DIR
 
 def get_plots_directory(base_dir):
     """Get or create plots directory"""
@@ -971,7 +972,7 @@ def create_results_directory(patch_size, image_type, condition_manager, code_ver
         str: Full path to the results directory
     """
     # Base directory (constant part)
-    base_dir = r"D:\OneDrive - University of Leeds\6. Running Result of GANs code\3. Universal_GAN_Project"
+    base_dir = RESULTS_DIR
     
     # Get current date in format YYMMDD
     current_date = datetime.datetime.now().strftime("%y%m%d")
