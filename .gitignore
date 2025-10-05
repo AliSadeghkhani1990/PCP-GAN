@@ -47,14 +47,18 @@ ENV/
 *.pth
 *.pt
 *.ckpt
-saved_models/
+saved_models/*
+!saved_models/.gitignore
 Saved Models/
 Load Model/
 
-# Dataset and results
-data/
-dataset/
-results/
+# Dataset and results - ignore contents but keep structure
+data/*
+!data/.gitignore
+dataset/*
+!dataset/.gitignore
+results/*
+!results/.gitignore
 output/
 *.png
 *.jpg
