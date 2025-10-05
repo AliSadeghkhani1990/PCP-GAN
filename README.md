@@ -40,3 +40,15 @@ python download_models.py
 # Option B: Manual download
 # Download from: https://doi.org/10.5281/zenodo.17271919
 # Place unet_model.h5 in the saved_models/ directory
+```
+### Sample Images
+Representative example images demonstrating the expected data format are available in the `examples/sample_images/` folder, organized by depth (1879.50m - 1943.50m). These show the required RGB thin-section format with blue-dyed epoxy in pore spaces.
+### Prepare Your Data
+Place your training images in the `data/` directory following this structure:
+```
+data/
+├── 1879.50/    # Depth category 1
+├── 1881.90/    # Depth category 2
+├── 1918.50/    # Depth category 3
+└── 1943.50/    # Depth category 4
+```

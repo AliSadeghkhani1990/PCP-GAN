@@ -65,6 +65,10 @@ output/
 *.jpeg
 *.tiff
 *.bmp
+# Exception: allow example images
+!examples/**/*.png
+!examples/**/*.jpg
+!examples/**/*.jpeg
 Training sub-images/
 Plots/
 epoch_images/
