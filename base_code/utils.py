@@ -112,9 +112,9 @@ def visualize_generated_samples(original_images, balanced_patch_info, n_samples,
     # Apply tight layout but with reduced padding
     plt.tight_layout(pad=0.4)
     from __main__ import results_directory
-    plots_dir = get_plots_directory(results_directory)
-    plt.savefig(os.path.join(plots_dir, 'generated_samples_visualization.png'), dpi=150, bbox_inches='tight')
-    print(f"Saved: generated_samples_visualization.png")
+    save_path = get_plot_path(results_directory, 'training_data_analysis', 'generated_samples_visualization.png')
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: generated_samples_visualization.png to training_data_analysis/")
     plt.close()
 
 def analyze_sample_distribution(samples_data, n_bins=10):
@@ -304,14 +304,13 @@ def plot_generated_images_enhanced(generator, epoch, latent_dim, n_channels, con
         if i < len(axes):
             ylabel = f"Category: {actual:.2f}\n(Class: {i})"
             axes[i][0].set_ylabel(ylabel, fontsize=10, rotation=90, labelpad=15)
-    
+
     plt.tight_layout()
     fig.suptitle(f'Generated Images at Epoch {epoch}', fontsize=16, y=1.02)
-    from __main__ import model_path_saving
-    epoch_dir = os.path.join(model_path_saving, "epoch_images")
-    os.makedirs(epoch_dir, exist_ok=True)
-    plt.savefig(os.path.join(epoch_dir, f'generated_epoch_{epoch:04d}.png'), dpi=150, bbox_inches='tight')
-    print(f"Saved: generated_epoch_{epoch:04d}.png")
+    from __main__ import results_directory
+    save_path = get_plot_path(results_directory, 'training_plots', f'generated_epoch_{epoch:04d}.png')
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: generated_epoch_{epoch:04d}.png to training_plots/")
     plt.close()
     
     # Print a summary of inputs used
@@ -348,9 +347,9 @@ def analyze_patch_info(patch_info, condition_manager):
         plt.xlabel('Porosity')
         plt.ylabel('Frequency')
         from __main__ import results_directory
-        plots_dir = get_plots_directory(results_directory)
-        plt.savefig(os.path.join(plots_dir, 'porosity_distribution.png'), dpi=150, bbox_inches='tight')
-        print(f"Saved: porosity_distribution.png")
+        save_path = get_plot_path(results_directory, 'training_data_analysis', 'porosity_distribution.png')
+        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        print(f"Saved: porosity_distribution.png to training_data_analysis/")
         plt.close()
 
     if 'category' in active_conditions:
@@ -467,12 +466,12 @@ def draw_heatmaps(original_patch_info, balanced_patch_info, condition_manager):
             ax2.set_ylabel('Category Classes')
         else:
             ax2.set_ylabel('Single Category')
-        
+
         plt.tight_layout()
         from __main__ import results_directory
-        plots_dir = get_plots_directory(results_directory)
-        plt.savefig(os.path.join(plots_dir, 'distribution_heatmaps.png'), dpi=150, bbox_inches='tight')
-        print(f"Saved: distribution_heatmaps.png")
+        save_path = get_plot_path(results_directory, 'training_data_analysis', 'distribution_heatmaps.png')
+        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        print(f"Saved: distribution_heatmaps.png to training_data_analysis/")
         plt.close()
     else:
         print("No conditions active - skipping heatmap visualization")
@@ -657,9 +656,11 @@ def plot_generated_images_inference_enhanced(generator, latent_dim, n_channels, 
     plt.subplots_adjust(top=0.92, left=0.1, right=0.98, bottom=0.05, wspace=0.02, hspace=0.15)
     
     # Save the figure
-    save_filename = os.path.join(model_path_saving, 'generated_inference_grid_enhanced.png')
+    # Save the figure
+    from __main__ import results_directory
+    save_filename = get_plot_path(results_directory, 'inference_result', 'generated_inference_grid_enhanced.png')
     plt.savefig(save_filename, dpi=300, bbox_inches='tight', format='png')
-    print(f"Image saved to: {save_filename}")
+    print(f"Saved: generated_inference_grid_enhanced.png to inference_result/")
 
     plt.close(fig)
     
@@ -778,11 +779,12 @@ def evaluate_generator_accuracy(generator, latent_dim, balanced_patch_info, n_cl
     plt.text(0.05, 0.95, f'R² = {r_squared:.4f}', 
              transform=plt.gca().transAxes, 
              bbox=dict(facecolor='white', alpha=0.8))
-    
+
     plt.tight_layout()
-    from __main__ import model_path_saving
-    plt.savefig(os.path.join(model_path_saving, 'generator_accuracy_evaluation.png'), dpi=150, bbox_inches='tight')
-    print(f"Saved: generator_accuracy_evaluation.png")
+    from __main__ import results_directory
+    save_path = get_plot_path(results_directory, 'evaluation_plots', 'generator_accuracy_evaluation.png')
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: generator_accuracy_evaluation.png to evaluation_plots/")
     plt.close()
     
     return {
@@ -1244,3 +1246,51 @@ def create_models_subdirectory(main_directory):
     os.makedirs(models_dir, exist_ok=True)
     print(f"Created models directory: {models_dir}")
     return models_dir
+
+
+def create_plots_directory_structure(results_directory):
+    """
+    Create the standardized plots directory structure.
+
+    Args:
+        results_directory: Base results directory
+
+    Returns:
+        Dictionary with paths to all plot subdirectories
+    """
+    plots_dir = os.path.join(results_directory, "Plots")
+
+    # Create main plots directory
+    os.makedirs(plots_dir, exist_ok=True)
+
+    # Create subdirectories
+    subdirs = {
+        'training_data_analysis': os.path.join(plots_dir, "training_data_analysis"),
+        'evaluation_plots': os.path.join(plots_dir, "evaluation_plots"),
+        'inference_result': os.path.join(plots_dir, "inference_result"),
+        'training_plots': os.path.join(plots_dir, "training_plots")
+    }
+
+    # Create all subdirectories
+    for subdir_path in subdirs.values():
+        os.makedirs(subdir_path, exist_ok=True)
+
+    return subdirs
+
+
+def get_plot_path(results_directory, plot_type, filename):
+    """
+    Get the correct path for a plot file based on its type.
+
+    Args:
+        results_directory: Base results directory
+        plot_type: Type of plot ('training_data_analysis', 'evaluation_plots',
+                   'inference_result', or 'training_plots')
+        filename: Name of the file to save
+
+    Returns:
+        Full path where the file should be saved
+    """
+    plots_dir = os.path.join(results_directory, "Plots", plot_type)
+    os.makedirs(plots_dir, exist_ok=True)
+    return os.path.join(plots_dir, filename)

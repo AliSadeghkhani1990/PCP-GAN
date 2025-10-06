@@ -263,7 +263,9 @@ def plot_training_results(gen_losses, disc_losses, epochs):
     ax1_twin.legend(loc='upper right')
 
     plt.tight_layout()
-    from __main__ import model_path_saving
-    plt.savefig(os.path.join(model_path_saving, 'training_results.png'), dpi=150, bbox_inches='tight')
-    print(f"Saved: training_results.png")
+    from __main__ import results_directory
+    from base_code.utils import get_plot_path
+    save_path = get_plot_path(results_directory, 'evaluation_plots', 'training_results.png')
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: training_results.png to evaluation_plots/")
     plt.close(fig)

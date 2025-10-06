@@ -21,14 +21,15 @@ from base_code.conditions import create_default_condition_manager
 from base_code.utils import (analyze_patch_info, draw_heatmaps,
                                    plot_generated_images_inference_enhanced, evaluate_generator_accuracy,
                                    visualize_generated_samples, print_data_ranges, save_inference_metadata, 
-                                   create_results_directory, save_training_images_by_class, create_models_subdirectory
+                                   create_results_directory, save_training_images_by_class, create_models_subdirectory,
+                                   create_plots_directory_structure
                                    )
 from tensorflow.keras.models import load_model
 from base_code.config import DATA_DIR, RESULTS_DIR, MODELS_DIR, UNET_MODEL_PATH, TRAINING_CONFIG
 
 # Configuration
 # Configuration from config file
-code_version = "Version48_Article_Multidepth_Publication"
+code_version = "PCP-GAN"
 patch_size = TRAINING_CONFIG['patch_size']
 threshold_value = TRAINING_CONFIG['threshold_value']
 num_patches_per_category_class = TRAINING_CONFIG['num_patches_per_category_class']
@@ -46,6 +47,7 @@ min_images_per_class = TRAINING_CONFIG['min_images_per_class']
 bat_per_epo = TRAINING_CONFIG['bat_per_epo']
 truncation_percentage_left = TRAINING_CONFIG.get('truncation_percentage_left', 0.0)
 truncation_percentage_right = TRAINING_CONFIG.get('truncation_percentage_right', 0.05)
+category_dimension = None  # Will be automatically set based on dataset
 # Image type configuration
 image_type = ImageType.RGB
 n_channels = {
@@ -63,7 +65,7 @@ model_names = ['G.h5', 'D.h5']
 local_model_path_loading = os.path.join(MODELS_DIR, 'pretrained')  # Uses config path
 unet_model_path = UNET_MODEL_PATH  # Uses config path
 
-category_dimension = None  # Will be automatically set based on dataset
+
 
 def load_or_create_models(n_channels, patch_size, condition_manager):
     """Load existing models or create new ones"""
@@ -92,6 +94,7 @@ def create_new_models(n_channels, patch_size, condition_manager):
     d_model = discriminator_model((patch_size, patch_size, n_channels), condition_manager)
     return g_model, d_model
 
+
 def main():
     global category_dimension, model_path_saving, results_directory
     print("Starting multi-depth conditional GAN training process...")
@@ -105,11 +108,17 @@ def main():
     print("Active conditions:", active_conditions)
     # Print porosity calculation information
     print("Using enhanced U-Net model for porosity calculation")
-    
+
     # Create results directory
     results_directory = create_results_directory(patch_size, image_type, condition_manager, code_version)
     print(f"Results will be saved to: {results_directory}")
-    
+
+    # Create plots directory structure
+    plot_paths = create_plots_directory_structure(results_directory)
+    print("Plots directory structure created:")
+    for key, path in plot_paths.items():
+        print(f"  - {key}: {path}")
+
     # Create models subdirectory
     model_path_saving = create_models_subdirectory(results_directory)
     print(f"Models will be saved to: {model_path_saving}")

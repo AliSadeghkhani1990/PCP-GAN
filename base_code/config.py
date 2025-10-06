@@ -19,7 +19,7 @@ UNET_MODEL_URL = "https://zenodo.org/records/17271919/files/unet_model.h5"
 TRAINING_CONFIG = {
     # Core training parameters
     'patch_size': 480,
-    'epochs': 100,
+    'epochs': 1,
     'n_batch': 12,
     'latent_dim': 100,
     'learning_rate': 0.0002,
@@ -27,7 +27,7 @@ TRAINING_CONFIG = {
 
     # Data processing parameters
     'threshold_value': 85,
-    'num_patches_per_category_class': 120,
+    'num_patches_per_category_class': 1200,
     'n_classes_porosity': 10,
     'desired_images_per_class': 160,
     'min_images_per_class': 20,
